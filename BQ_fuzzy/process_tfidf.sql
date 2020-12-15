@@ -1,0 +1,13 @@
+CREATE OR REPLACE TABLE `cs686-hrishmoola.bq_nlp_playground.processed_tf_idf` as
+
+SELECT *, ROUND(LOG10(TOTAL_COMPANY/OCCURENCE_NGRAM),3) AS IDF
+FROM
+(
+SELECT * except (ngrams, NGRAMS_ACTUAL), COUNT(*) OVER (PARTITION BY NGRAM_ONLY) AS OCCURENCE_NGRAM, (SELECT COUNT(DISTINCT COMPANY_NAME_CLEANED) FROM `cs686-hrishmoola.bq_nlp_playground.company_ngrams_output`) AS TOTAL_COMPANY
+FROM
+(
+SELECT * , SPLIT(NGRAMS_ACTUAL, ':')[OFFSET(0)] AS NGRAM_ONLY ,SPLIT(NGRAMS_ACTUAL, ':')[OFFSET(1)] AS TF
+FROM `cs686-hrishmoola.bq_nlp_playground.company_ngrams_output`, UNNEST(NGRAMS) AS NGRAMS_ACTUAL
+--LIMIT 100
+)
+)
